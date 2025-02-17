@@ -17,7 +17,6 @@ sapply(df_col_trim, function(x) sum(is.na(x)))
 # at this point 1542 N/A values out of 4318 for the MARHYP columns. do we remove those or based on the POWPUMA They remove
 #different lines POWPUMA after MARHYP leaves 1100 NA. The reverse leaves 918 NA. Which is the better choice? Are either good?
 #they remove different lines.... should we prioritize what returns more zeros over all or keeps more data involved to clean the rest
-
 #I think we should go in the direction of removing rows based on POWPUMA since it retains more “non-missing data” (so less data loss)
 
 df_row_trim <-df_col_trim %>% drop_na(POWPUMA)
