@@ -28,3 +28,13 @@ df_final <- df_row_trim %>% drop_na(MARHYP)
 dim(df_final)
 sapply(df_final, function (x) sum(is.na(x)))
 df_final
+
+#replace Na's with median
+df_final <- df_final %>%
+  mutate(across(where(is.numeric), 
+                ~ replace(., is.na(.), median(., na.rm = TRUE))))
+sapply(df_final, function(x) sum(is.na(x)))
+sapply(df_final, class)
+dim(df_final)
+
+df_final
