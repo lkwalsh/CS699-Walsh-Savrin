@@ -38,3 +38,6 @@ sapply(df_final, class)
 dim(df_final)
 
 df_final
+#checking for duplicates
+df_unique = unique(df_final)
+df_unique
