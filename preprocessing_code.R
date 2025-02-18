@@ -1,84 +1,83 @@
+# Updated preprocessing script
+setwd("C:\\Users\\linds\\OneDrive\\Documents\\GitHub\\CS699-Walsh-Savrin")
+system("git status")
+system("git add preprocessing_code.R")
+
 install.packages()
 library(dplyr)
 library(tidyr)
 
-file<-read.csv("C:/Users/lsav1/Downloads/project_data.csv")
-dim(file)
-data<-file
+# Load dataset
+file <- read.csv("C:/Users/linds/Downloads/project_data.csv")
+data <- file
 dim(data)
-sum(is.na(data)) # number of missing values in the whole dataset
-sapply(data, function(x) sum(is.na(x))) # missing values in individual columns
 
+# Check for missing values
+sum(is.na(data)) # Number of missing values in the dataset
+sapply(data, function(x) sum(is.na(x))) # Missing values per column
+
+# Remove columns where more than 50% of rows are NA
 threshold <- 0.5 * nrow(data)
-df_col_trim <- data[, colSums(is.na(data)) <= threshold] #cut columns where more than 50% of rows are NA
+df_col_trim <- data[, colSums(is.na(data)) <= threshold]
 dim(df_col_trim)
 sapply(df_col_trim, function(x) sum(is.na(x)))
 
-# at this point 1542 N/A values out of 4318 for the MARHYP columns. do we remove those or based on the POWPUMA They remove
-#different lines POWPUMA after MARHYP leaves 1100 NA. The reverse leaves 918 NA. Which is the better choice? Are either good?
-#they remove different lines.... should we prioritize what returns more zeros over all or keeps more data involved to clean the rest
-#I think we should go in the direction of removing rows based on POWPUMA since it retains more “non-missing data” (so less data loss)
+# At this point MARHYP has 1542 missing out of 4318
+# We have to decide whether to remove rows based on MARHYP or POWPUMA:
+# If we remove rows based on MARHYP first --> 1,100 missing values remain in POWPUMA
+# If we remove rows based on POWPUMA first --> 918 missing values remain in MARHYP
+# Removing POWPUMA first keeps more non missing data so we can go in that direction
 
-df_row_trim <-df_col_trim %>% drop_na(POWPUMA)
+df_row_trim <- df_col_trim %>% drop_na(POWPUMA)
 dim(df_row_trim)
 sapply(df_row_trim, function(x) sum(is.na(x)))
 
-#checking for further trimming
+# More trimming by removing MARHYP missing values
 df_row_trim_2 <- df_row_trim %>% drop_na(MARHYP)
 dim(df_row_trim_2)
-sapply(df_row_trim_2, function (x) sum(is.na(x)))
-df_row_trim_2
+sapply(df_row_trim_2, function(x) sum(is.na(x)))
 
-#replace Na's with median
+# Replace remaining NA values with the median (imputation)
 df_imputation <- df_row_trim_2 %>%
   mutate(across(where(is.numeric), 
                 ~ replace(., is.na(.), median(., na.rm = TRUE))))
 sapply(df_imputation, function(x) sum(is.na(x)))
-sapply(df_imputation, class) #determines the type for each column
-dim(df_imputation)
 
-df_imputation
-
-#checking for duplicates
+# Check for duplicates
 df_unique <- unique(df_imputation)
 dim(df_unique)
 
-#converting class to a binary numeric code. 1=Yes, 0=No
+# Convert class to a binary numeric (1 = Yes, 0 = No)
 df_imputation$Class <- ifelse(df_imputation$Class == "Yes", 1, 0)
 
-#remove non-numeric columns
-df_numeric <- df_imputation %>% select(-Class, -RT, -SERIALNO) ##since we made class a binary do we need to remove it. We don't want to lose that as the clasifier...
+# Remove non numeric columns
+df_numeric <- df_imputation %>% select(-RT, -SERIALNO)  # Keep class as it is our classifier
 dim(df_numeric)
 
-#check for low variance columns
+# Check for low variance columns
 variances <- apply(df_numeric, 2, var, na.rm = TRUE)
-threshold <- 0.01  # Set the threshold for low variance
-variances
-df_no_var <- df_imputation[, variances > threshold]
-dim(df_no_var)
-df_numeric_no_var <- df_no_var %>% select(-Class, -SERIALNO)
+threshold <- 0.01  # Set threshold for low variance
+df_numeric_no_var <- df_numeric[, variances > threshold]
+dim(df_numeric_no_var)
 
-variances <- apply(df_numeric, 2, var, na.rm = TRUE)
+# Make sure zero variance columns are removed too
 zero_variance_cols <- names(variances)[variances == 0]
-zero_variance_cols
 df_numeric_no_var <- df_numeric[, variances > 0]
 dim(df_numeric_no_var)
-#Do we need both of the above? Apparently yes
 
-#check for highly correlated columns
+# At first we questioned whether both variance filtering steps were needed but confirmed it is good to double check:
+# (1) First filters out low-variance columns
+# (2) Second ensures zero-variance columns are removed
+
+# Check for highly correlated columns
 cor_matrix <- cor(df_numeric_no_var)
-cor_matrix
-
 high_cor_matrix <- cor_matrix > 0.5
-high_cor_values <- cor_matrix[high_cor_matrix] #do we need this? seems like not...
-high_cor_matrix
 
-# Get the row and column names for high correlations
+# Identify correlated pairs
 high_cor_pairs <- which(high_cor_matrix, arr.ind = TRUE)
-high_cor_pairs <- high_cor_pairs[high_cor_pairs[,1] != high_cor_pairs[,2], ]#Remove diagonal
-high_cor_pairs
+high_cor_pairs <- high_cor_pairs[high_cor_pairs[,1] != high_cor_pairs[,2], ] # Remove diagonal
 
-#review highly correlated columns
+# Review highly correlated columns
 high_cor_df <- data.frame(
   var1 = rownames(cor_matrix)[high_cor_pairs[, 1]],
   var2 = colnames(cor_matrix)[high_cor_pairs[, 2]],
@@ -86,23 +85,15 @@ high_cor_df <- data.frame(
 )
 
 high_cor_df
-df_numeric_no_cor<- df_numeric_no_var %>% select(-RAC1P, -RAC2P, -RACNUM, -RACSOR,-CIT,-NATIVITY,-MSP,-WAOB, -WAGP, -PERNP)
-high_cor_df2 <- high_cor_df[!(high_cor_df$var1 %in% c("RAC1P", "RAC2P", "RACNUM", "RACSOR","CIT","NATIVITY","MSP","WAOB", "WAGP", "PERNP")),]  # Keep rows where 'class' is not "No"
 
-high_cor_df2
+# Remove highly correlated columns
+df_numeric_no_cor <- df_numeric_no_var %>% select(-RAC1P, -RAC2P, -RACNUM, -RACSOR, -CIT, -NATIVITY, -MSP, -WAOB, -WAGP, -PERNP)
 dim(df_numeric_no_cor)
 
-# Create a correlation matrix
-cor_matrix <- cor(df_numeric2)  # where df is your dataset
+# Boxplot for outlier detection in SCHL
+boxplot(df_numeric_no_cor$SCHL, main = "Boxplot of SCHL")
 
-colnames(df_numeric_no_cor)
-
-boxplot(df_numeric_no_cor$SCHL, main = "Boxplot of column_name")
-
-# Identify outliers using the IQR method from the boxplot
+# Identify outliers using IQR method from the boxplot
 outliers <- boxplot(df_numeric_no_cor$SCHL, plot = FALSE)$out
 outliers
-
-system('git commit -m "Updated preprocessing_code.R with latest changes"')
-system("git push origin main")
 
