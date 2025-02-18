@@ -1,4 +1,3 @@
-# Updated preprocessing script
 setwd("C:\\Users\\linds\\OneDrive\\Documents\\GitHub\\CS699-Walsh-Savrin")
 system("git status")
 system("git add preprocessing_code.R")
