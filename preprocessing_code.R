@@ -1,4 +1,4 @@
-setwd("C:\\Users\\linds\\OneDrive\\Documents\\GitHub\\CS699-Walsh-Savrin")
+setwd("C:\\Users\\lsav1\\OneDrive\\Documents\\GitHub\\CS699-Walsh-Savrin")
 system("git status")
 system("git add preprocessing_code.R")
 
@@ -7,7 +7,7 @@ library(dplyr)
 library(tidyr)
 
 # Load dataset
-file <- read.csv("C:/Users/linds/Downloads/project_data.csv")
+file<-read.csv("C:/Users/lsav1/Downloads/project_data.csv")
 data <- file
 dim(data)
 
@@ -50,23 +50,27 @@ dim(df_unique)
 df_imputation$Class <- ifelse(df_imputation$Class == "Yes", 1, 0)
 
 # Remove non numeric columns
-df_numeric <- df_imputation %>% select(-RT, -SERIALNO)  # Keep class as it is our classifier
+df_numeric <- df_imputation %>% select(-RT, -SERIALNO)
 dim(df_numeric)
+colnames(df_numeric)
 
-# Check for low variance columns
+# Make sure zero variance columns are removed
 variances <- apply(df_numeric, 2, var, na.rm = TRUE)
-threshold <- 0.01  # Set threshold for low variance
-df_numeric_no_var <- df_numeric[, variances > threshold]
-dim(df_numeric_no_var)
-
-# Make sure zero variance columns are removed too
 zero_variance_cols <- names(variances)[variances == 0]
-df_numeric_no_var <- df_numeric[, variances > 0]
-dim(df_numeric_no_var)
+zero_variance_cols
+df_numeric_no_zero <- df_numeric[, variances > 0]
+dim(df_numeric_no_zero)
 
-# At first we questioned whether both variance filtering steps were needed but confirmed it is good to double check:
-# (1) First filters out low-variance columns
-# (2) Second ensures zero-variance columns are removed
+# Check for low variance columns and remove those as well
+low_variances <- apply(df_numeric_no_zero, 2, var, na.rm = TRUE)
+threshold <- 0.01  # Set threshold for low variance
+df_numeric_no_var <- df_numeric_no_zero[, low_variances > threshold]
+dim(df_numeric_no_var)
+colnames(df_numeric_no_var)
+
+# At first we questioned whether both variance filtering steps were needed but confirmed it is good to check both:
+# (1) First ensures zero-variance columns are removed
+# (2) Second filters out low-variance columns
 
 # Check for highly correlated columns
 cor_matrix <- cor(df_numeric_no_var)
@@ -94,5 +98,7 @@ boxplot(df_numeric_no_cor$SCHL, main = "Boxplot of SCHL")
 
 # Identify outliers using IQR method from the boxplot
 outliers <- boxplot(df_numeric_no_cor$SCHL, plot = FALSE)$out
-outliers
+(outliers)
 
+system('git commit -m "Updated preprocessing_code.R with latest changes"')
+system("git push origin main")
