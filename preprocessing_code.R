@@ -60,14 +60,6 @@ colnames(df_numeric_no_var)
 # (1) First ensures zero-variance columns are removed
 # (2) Second filters out low-variance columns
 
-
-##If we want to use findCorrelation- use below. Turns out the same num of columns but diff set.
-#b<-findCorrelation(cor_matrix,cutoff=0.8)
-#print(b)
-#colnames(df_numeric_no_var)[b]
-#df_cleaned <- df_numeric_no_var[, -b]
-#print(colnames(df_cleaned))
-
 # Check for highly correlated columns
 cor_matrix <- cor(df_numeric_no_var)
 print(cor_matrix)
@@ -91,7 +83,8 @@ df_numeric_no_cor <- df_numeric_no_var %>% dplyr::select(-RAC1P, -RAC2P, -RACNUM
 dim(df_numeric_no_cor)
 print(colnames(df_numeric_no_cor))
 
-#Identify outliers using IQR method from the boxplot
+#Identify outliers the boxplot
+
 summary(df_numeric_no_cor$SPORDER)
 table(boxplot(df_numeric_no_cor$SPORDER, plot = FALSE)$out)
 #everything 4 and over...keep them all
@@ -126,8 +119,8 @@ table(boxplot(df_numeric_no_cor$MAR, plot = FALSE)$out)
 
 summary(df_numeric_no_cor$MARHYP)
 table(boxplot(df_numeric_no_cor$MARHYP, plot = FALSE)$out)
-sum(table(boxplot(df_numeric_no_cor$JWTRNS, plot = FALSE)$out))
-#820 outliers, anything between 1947 - 1971. this is based on 2023 data so people married in these years are older and fewer
+sum(table(boxplot(df_numeric_no_cor$MARHYP, plot = FALSE)$out))
+#323 outliers, anything between 1947 - 1971. this is based on 2023 data so people married in these years are older and fewer
 
 summary(df_numeric_no_cor$MIL)
 table(boxplot(df_numeric_no_cor$MIL, plot = FALSE)$out)
@@ -169,7 +162,7 @@ table(boxplot(df_numeric_no_cor$SSP, plot = FALSE)$out)
 sum(table(boxplot(df_numeric_no_cor$SSP, plot = FALSE)$out))
 #predominantly zero. 992 outliers... keep them all
 
-summary(df_numeric_no_cor$WKHP)
+table(df_numeric_no_cor$WKHP)
 table(boxplot(df_numeric_no_cor$WKHP, plot = FALSE)$out)
 sum(table(boxplot(df_numeric_no_cor$WKHP, plot = FALSE)$out))
 #anything outside a 40 hour work week is an outlier. 1604 outliers
@@ -181,7 +174,7 @@ sum(table(boxplot(df_numeric_no_cor$WKWN, plot = FALSE)$out))
 
 summary(df_numeric_no_cor$ANC)
 table(boxplot(df_numeric_no_cor$ANC, plot = FALSE)$out)
-#outliers i 4 with 799
+#outliers is 4 with 799
 
 summary(df_numeric_no_cor$ANC1P)
 table(boxplot(df_numeric_no_cor$ANC1P, plot = FALSE)$out)
@@ -244,7 +237,59 @@ sum(table(boxplot(df_numeric_no_cor$RAC3P, plot = FALSE)$out))
 #850 total. looks like anything 4 or above
 
 
+#Handling outliers
+df_outliers<-df_numeric_no_cor
+#SPORDER
+df_outliers$SPORDER <- log(df_outliers$SPORDER)
 
+summary(df_outliers$SPORDER)
+table(boxplot(df_outliers$SPORDER, plot = FALSE)$out)
+
+#PWGTP
+df_outliers$PWGTP <- log(df_outliers$PWGTP)
+
+summary(df_outliers$PWGTP)
+table(boxplot(df_outliers$PWGTP, plot = FALSE)$out)
+
+#OIP
+df_outliers$OIP <- log(df_outliers$OIP+1)
+
+summary(df_outliers$OIP)
+sum(table(boxplot(df_outliers$OIP, plot = FALSE)$out))
+
+#PAP
+df_outliers$PAP <- log(df_outliers$PAP+1)
+
+summary(df_outliers$PAP)
+sum(table(boxplot(df_outliers$PAP, plot = FALSE)$out))
+
+#RETP
+df_outliers$RETP <- log(df_outliers$RETP+1)
+
+summary(df_outliers$RETP)
+sum(table(boxplot(df_outliers$RETP, plot = FALSE)$out))
+
+#SEMP
+df_outliers$SEMP <- log(df_outliers$SEMP+1)
+
+summary(df_outliers$SEMP)
+sum(table(boxplot(df_outliers$SEMP, plot = FALSE)$out))
+
+problematic_rows <- df_numeric_no_cor[df_numeric_no_cor$SEMP < -1 | is.na(df_numeric_no_cor$SEMP) | is.infinite(df_numeric_no_cor$SEMP), ]
+print(problematic_rows)
+
+
+#SSIP
+df_outliers$SSIP <- log(df_outliers$SSIP+1)
+
+summary(df_outliers$SSIP)
+sum(table(boxplot(df_outliers$SSIP, plot = FALSE)$out))
+
+#SSP
+df_outliers$SSP <- log(df_outliers$SSP+1)
+
+summary(df_outliers$SSP)
+sum(table(boxplot(df_outliers$SSP, plot = FALSE)$out))
 
 ##INSERT OUTLIER TABLES HERE
 
