@@ -1,3 +1,7 @@
+setwd("C:\\Users\\linds\\OneDrive\\Documents\\GitHub\\CS699-Walsh-Savrin")
+system("git status")
+system("git add preprocessing_code.R")
+
 df <- read.csv('preprocessing.csv')
 set.seed(31)
 library(rsample)
@@ -146,9 +150,59 @@ important_features_rose <- names(pc1_loadings_rose[abs(pc1_loadings_rose) > thre
 # Print the selected features
 print(important_features_rose)
 # Select the subset of original features based on the identified important ones
-final_data_rose <- balanced_rose_rose[, c("Class", important_features_rose)]
+final_data_rose <- balanced_rose[, c("Class", important_features_rose)]
 # Check the selected data
 print(head(final_data_rose))
+# OVUN
+# Standardize the data (if it's not already standardized)
+scaled_features_ovun <- scale(balanced_ovun[, -which(names(balanced_ovun) == "Class")])
+# Perform PCA
+pca_result_ovun <- prcomp(scaled_features_ovun, center = TRUE, scale. = TRUE)
+# Check how much variance each principal component explains
+summary(pca_result_ovun)
+# Get PCA loadings (coefficients of the original features for each principal component)
+loadings_ovun <- pca_result_ovun$rotation
+# Get the loadings for the first principal component
+pc1_loadings_ovun <- loadings_ovun[, 1]
+# Sort by absolute value to find the most influential features
+sorted_pc1_loadings_ovun <- sort(abs(pc1_loadings_ovun), decreasing = TRUE)
+# Display the top features contributing to PC1
+top_features_pc1_ovun <- names(sorted_pc1_loadings_ovun)
+# Set a threshold for feature selection based on loadings
+threshold <- 0.1  # Example threshold
+important_features_ovun <- names(pc1_loadings_ovun[abs(pc1_loadings_ovun) > threshold])
+# Print the selected features
+print(important_features_ovun)
+# Select the subset of original features based on the identified important ones
+final_data_ovun <- balanced_ovun[, c("Class", important_features_ovun)]
+# Check the selected data
+print(head(final_data_ovun))
+
+# UNDER
+scaled_features_under <- scale(balanced_under[, -which(names(balanced_under) == "Class")])
+pca_result_under <- prcomp(scaled_features_under, center = TRUE, scale. = TRUE)
+summary(pca_result_under)
+loadings_under <- pca_result_under$rotation
+pc1_loadings_under <- loadings_under[, 1]
+sorted_pc1_loadings_under <- sort(abs(pc1_loadings_under), decreasing = TRUE)
+top_features_pc1_under <- names(sorted_pc1_loadings_under)
+important_features_under <- names(pc1_loadings_under[abs(pc1_loadings_under) > threshold])
+print(important_features_under)
+final_data_under <- balanced_under[, c("Class", important_features_under)]
+print(head(final_data_under))
+
+# OVER
+scaled_features_over <- scale(balanced_over[, -which(names(balanced_over) == "Class")])
+pca_result_over <- prcomp(scaled_features_over, center = TRUE, scale. = TRUE)
+summary(pca_result_over)
+loadings_over <- pca_result_over$rotation
+pc1_loadings_over <- loadings_over[, 1]
+sorted_pc1_loadings_over <- sort(abs(pc1_loadings_over), decreasing = TRUE)
+top_features_pc1_over <- names(sorted_pc1_loadings_over)
+important_features_over <- names(pc1_loadings_over[abs(pc1_loadings_over) > threshold])
+print(important_features_over)
+final_data_over <- balanced_over[, c("Class", important_features_over)]
+print(head(final_data_over))
 
 
 ###Naive Bayesian###
