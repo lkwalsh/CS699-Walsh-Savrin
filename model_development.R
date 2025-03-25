@@ -123,6 +123,33 @@ table(balanced_over_selected$Class)
 
 ##PCA - use loadings to identify features
 
+#ROSE
+# Standardize the data (if it's not already standardized)
+scaled_features_rose <- scale(balanced_rose[, -which(names(balanced_rose) == "Class")])
+# Perform PCA
+pca_result_rose <- prcomp(scaled_features_rose, center = TRUE, scale. = TRUE)
+# Check how much variance each principal component explains
+summary(pca_result_rose)
+# Get PCA loadings (coefficients of the original features for each principal component)
+loadings_rose <- pca_result_rose$rotation
+print(loadings_rose)
+# Get the loadings for the first principal component
+pc1_loadings_rose <- loadings_rose[, 1]
+# Sort by absolute value to find the most influential features
+sorted_pc1_loadings_rose <- sort(abs(pc1_loadings_rose), decreasing = TRUE)
+# Display the top features contributing to PC1
+top_features_pc1_rose <- names(sorted_pc1_loadings_rose)
+print(top_features_pc1_rose)
+# Set a threshold for feature selection based on loadings
+threshold <- 0.1  # Example threshold
+important_features_rose <- names(pc1_loadings_rose[abs(pc1_loadings_rose) > threshold])
+# Print the selected features
+print(important_features_rose)
+# Select the subset of original features based on the identified important ones
+final_data_rose <- balanced_rose_rose[, c("Class", important_features_rose)]
+# Check the selected data
+print(head(final_data_rose))
+
 
 ###Naive Bayesian###
 
