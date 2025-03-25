@@ -301,6 +301,9 @@ df_outliers$INTP <- sign(df_outliers$INTP) * abs(df_outliers$INTP)^(1/4)
 summary(df_outliers$INTP)
 sum(table(boxplot(df_outliers$INTP, plot = FALSE)$out))
 
+###print preprocessing output###
+write.csv(df_outliers, "preprocessing.csv", row.names = FALSE)
+
 
 ###Split### 
 set.seed(31)
