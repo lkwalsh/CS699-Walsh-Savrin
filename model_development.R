@@ -153,6 +153,7 @@ print(important_features_rose)
 final_data_rose <- balanced_rose[, c("Class", important_features_rose)]
 # Check the selected data
 print(head(final_data_rose))
+
 # OVUN
 # Standardize the data (if it's not already standardized)
 scaled_features_ovun <- scale(balanced_ovun[, -which(names(balanced_ovun) == "Class")])
@@ -204,6 +205,60 @@ print(important_features_over)
 final_data_over <- balanced_over[, c("Class", important_features_over)]
 print(head(final_data_over))
 
+## LASSO - attempting this because chi square did not work well. We should check with prof
+# because this was not in our lecture
+install.packages()
+library(glmnet)
+
+#ROSE
+# Convert data to matrix form
+x_rose <- model.matrix(Class ~ . - 1, data = balanced_rose)
+y_rose <- balanced_rose$Class
+# Fit Lasso (alpha = 1) using cross-validation
+cv_lasso_rose <- cv.glmnet(x_rose, y_rose, family = "binomial", alpha = 1, type.measure = "class")
+# Get coefficients at best lambda
+coef_lasso_rose <- coef(cv_lasso_rose, s = "lambda.min")
+print(coef_lasso_rose)
+# Extract non-zero coefficients (excluding intercept)
+selected_lasso_rose <- rownames(coef_lasso_rose)[coef_lasso_rose[,1] != 0]
+selected_lasso_rose <- setdiff(selected_lasso_rose, "(Intercept)")
+# Subset original data to selected features
+balanced_rose_lasso_selected <- balanced_rose[, c(selected_lasso_rose, "Class")]
+print(head(balanced_rose_lasso_selected))
+
+# OVUN
+x_ovun <- model.matrix(Class ~ . - 1, data = balanced_ovun)
+y_ovun <- balanced_ovun$Class
+cv_lasso_ovun <- cv.glmnet(x_ovun, y_ovun, family = "binomial", alpha = 1, type.measure = "class")
+coef_lasso_ovun <- coef(cv_lasso_ovun, s = "lambda.min")
+selected_lasso_ovun <- rownames(coef_lasso_ovun)[coef_lasso_ovun[,1] != 0]
+selected_lasso_ovun <- setdiff(selected_lasso_ovun, "(Intercept)")
+balanced_ovun_lasso_selected <- balanced_ovun[, c(selected_lasso_ovun, "Class")]
+
+# UNDER
+x_under <- model.matrix(Class ~ . - 1, data = balanced_under)
+y_under <- balanced_under$Class
+cv_lasso_under <- cv.glmnet(x_under, y_under, family = "binomial", alpha = 1, type.measure = "class")
+coef_lasso_under <- coef(cv_lasso_under, s = "lambda.min")
+selected_lasso_under <- rownames(coef_lasso_under)[coef_lasso_under[,1] != 0]
+selected_lasso_under <- setdiff(selected_lasso_under, "(Intercept)")
+balanced_under_lasso_selected <- balanced_under[, c(selected_lasso_under, "Class")]
+
+# OVER
+x_over <- model.matrix(Class ~ . - 1, data = balanced_over)
+y_over <- balanced_over$Class
+cv_lasso_over <- cv.glmnet(x_over, y_over, family = "binomial", alpha = 1, type.measure = "class")
+coef_lasso_over <- coef(cv_lasso_over, s = "lambda.min")
+selected_lasso_over <- rownames(coef_lasso_over)[coef_lasso_over[,1] != 0]
+selected_lasso_over <- setdiff(selected_lasso_over, "(Intercept)")
+balanced_over_lasso_selected <- balanced_over[, c(selected_lasso_over, "Class")]
+
+
+# 
+# 
+
+install.packages()
+library(caret)
 
 ###Naive Bayesian###
 
@@ -218,6 +273,16 @@ print(head(final_data_over))
 
 
 ###Linear Discriminant Analysis###
+
+###KNN###
+
+###Neural Network###
+
+###Logistic Regression###
+
+###Linear SVM###
+
+###Adaboost###
 
 system("git status")
 system("git add model_development.R")
